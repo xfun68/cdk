@@ -1,0 +1,14 @@
+#!/bin/bash -l
+
+export RAILS_ENV=test
+
+# Ensure the .rvmrc is loaded successfully
+rvm rvmrc trust .
+cd && cd -
+
+# Install or upgrade gems
+bundle install
+
+# Run tests
+rake --trace --verbose ci
+
