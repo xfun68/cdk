@@ -1,0 +1,8 @@
+#! /bin/bash -ex
+
+stash_output=$(git stash) && \
+git pull --rebase && \
+bundle install && \
+( echo $stash_output | grep 'Saved working' ) && \
+git stash pop
+
