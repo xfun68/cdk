@@ -1,0 +1,11 @@
+#! /bin/bash -ex
+
+stash_output=$(git stash) && \
+git pull --rebase && \
+bundle install && \
+./script/ci && \
+git push && \
+git log --oneline --all --graph --decorate --color=always | head -n20 && \
+( echo $stash_output | grep 'Saved working' ) && \
+git stash pop
+

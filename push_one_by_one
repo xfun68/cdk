@@ -1,0 +1,31 @@
+#! /bin/bash -ex
+
+# Stash local changes
+stash_output=$(git stash)
+
+# Pull the latest code
+git pull --rebase
+bundle install
+
+# Prepare branch, commits info
+current_branch=`git branch | egrep '\*' | cut -d ' ' -f 2`
+number_of_commits=`git status | egrep -o 'ahead of .* by \d+ commit' | cut -d ' ' -f 5`
+
+# Checkout every single new commit (older one first), run test via ./script/ci and push
+count=$number_of_commits
+while [[ $count -gt 0 ]]; do
+  count=$(( count - 1))
+
+  commit_to_push=`git show $current_branch~$count --oneline | head -n1 | cut -d ' ' -f 1`
+
+  git checkout $commit_to_push
+  ./script/ci
+  git push origin $commit_to_push:$current_branch
+  git log --oneline --all --graph --decorate --color=always | head -n$((10+number_of_commits))
+done
+
+git checkout $current_branch
+
+# Stash pop to recover previous local changes
+( echo $stash_output | grep 'Saved working' ) && git stash pop
+
